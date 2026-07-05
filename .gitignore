@@ -13,8 +13,8 @@ dist/
 *.egg-info/
 letsencrypt/
 
-# Internal working docs (specs/plans) — the Uzbek guides in docs/*.md stay tracked
-docs/superpowers/
+# Local-only documentation
+docs/
 
 # Claude Code session artifacts
 .superpowers/
