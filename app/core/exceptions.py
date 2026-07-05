@@ -6,7 +6,11 @@ logger = structlog.get_logger()
 
 
 class AppError(Exception):
-    """Domain xatolari bazasi. Service qatlami HTTP'ni bilmaydi — shu xatolarni tashlaydi."""
+    """Base class for domain errors.
+
+    The service layer raises these instead of HTTP exceptions;
+    the handlers registered below translate them to JSON responses.
+    """
 
     status_code = 500
     code = "app_error"

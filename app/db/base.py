@@ -11,7 +11,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 
 class TimestampedBase(Base):
-    """Django'dagi umumiy BaseModel ekvivalenti: UUID pk + created/updated_at."""
+    """Abstract base with a UUID primary key and created/updated timestamps."""
 
     __abstract__ = True
 

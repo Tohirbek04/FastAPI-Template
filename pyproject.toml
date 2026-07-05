@@ -64,7 +64,7 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 filterwarnings = [
-    # Python 3.14: uchinchi tomon kutubxonalari (slowapi/starlette) hali eski API'da
+    # Python 3.14: third-party libs (slowapi/starlette) still use the deprecated API
     "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
 ]
 asyncio_default_test_loop_scope = "session"

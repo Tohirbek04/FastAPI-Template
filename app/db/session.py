@@ -9,7 +9,7 @@ SessionFactory = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:
-    """Session-per-request unit of work: muvaffaqiyatda commit, xatoda rollback."""
+    """Session-per-request unit of work: commit on success, rollback on error."""
     async with SessionFactory() as session:
         yield session
         await session.commit()

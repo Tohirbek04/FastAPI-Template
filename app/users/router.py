@@ -38,5 +38,5 @@ async def list_users(
 ) -> Page[UserRead]:
     if not current_user.is_superuser:
         raise PermissionDeniedError("Superuser required")
-    # Doim deterministik order_by — aks holda Postgres tartibi barqaror emas
+    # Always order deterministically — otherwise Postgres row order is unstable
     return await apaginate(db, select(User).order_by(User.created_at, User.id))

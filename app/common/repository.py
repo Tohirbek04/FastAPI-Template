@@ -7,7 +7,12 @@ from app.db.base import Base
 
 
 class BaseRepository[ModelT: Base]:
-    """Django'dagi Model.objects manager'ining ekvivalenti — lekin explicit dependency."""
+    """Generic CRUD repository over a single model.
+
+    Receives its session explicitly, so it is trivial to swap or mock in
+    tests. Methods flush (send SQL) but never commit — the commit decision
+    belongs to the request-scoped unit of work in get_db().
+    """
 
     model: type[ModelT]
 

@@ -6,7 +6,7 @@ from app.core.config import get_settings
 
 
 def configure_logging() -> None:
-    """Dev: rangli console; prod: JSON (Grafana/Loki uchun)."""
+    """Pretty console output in dev, JSON in prod (for log aggregators)."""
     settings = get_settings()
     shared: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
@@ -24,7 +24,7 @@ def configure_logging() -> None:
         wrapper_class=structlog.make_filtering_bound_logger(
             logging.DEBUG if settings.debug else logging.INFO
         ),
-        # Keshlash faqat prod'da: testlarda capture_logs() keshlangan
-        # logger'larni almashtira olmaydi.
+        # Cache loggers only in prod: cached loggers ignore the temporary
+        # configuration that structlog's capture_logs() installs in tests.
         cache_logger_on_first_use=settings.env == "prod",
     )

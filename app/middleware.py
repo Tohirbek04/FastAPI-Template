@@ -5,7 +5,9 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 
 class RequestContextMiddleware:
-    """Har request uchun structlog kontekstini tozalab, request_id bog'laydi."""
+    """Clear structlog context per request and bind request_id/path,
+    so every log line emitted while handling the request carries them.
+    """
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app

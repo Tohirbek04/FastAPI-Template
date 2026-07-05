@@ -14,7 +14,10 @@ router = APIRouter()
 
 @router.get("", response_model=Msg)
 async def health(db: Annotated[AsyncSession, Depends(get_db)]) -> Msg:
-    """DB va Redis'ga chin ping — load balancer/deploy health check uchun."""
+    """Genuine liveness check: pings the database and Redis.
+
+    Used by load balancers, container HEALTHCHECKs and post-deploy probes.
+    """
     await db.execute(text("SELECT 1"))
     redis: Redis = Redis.from_url(get_settings().redis_url)
     try:

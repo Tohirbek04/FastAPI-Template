@@ -16,7 +16,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.core.config import get_settings
-from app.db import registry  # noqa: F401  — modellarni metadata'ga ro'yxatlaydi
+from app.db import registry  # noqa: F401  — registers all models on Base.metadata
 from app.db.base import Base
 
 config.set_main_option("sqlalchemy.url", get_settings().database_url)

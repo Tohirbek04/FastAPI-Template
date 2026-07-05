@@ -34,7 +34,8 @@ if settings.sentry_dsn:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # MUHIM: worker jarayonida qayta startup qilinmaydi — cheksiz rekursiya bo'lardi
+    # Taskiq worker processes import this module too; starting the broker
+    # there again would recurse forever.
     if not broker.is_worker_process:
         await broker.startup()
     yield

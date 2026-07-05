@@ -5,13 +5,13 @@ from app.core.config import get_settings
 
 
 def client_ip(request: Request) -> str:
-    """Haqiqiy klient IP.
+    """Real client IP.
 
-    X-Forwarded-For bu yerda ataylab o'qilmaydi — header spoofing bilan
-    rate-limit'ni aylanib o'tish mumkin bo'lardi. Buning o'rniga prod'da
-    uvicorn `--proxy-headers --forwarded-allow-ips` bilan ishga tushiriladi
-    (deployment/docker-compose.yml) va request.client allaqachon Traefik
-    yozgan haqiqiy IP bo'ladi.
+    X-Forwarded-For is deliberately NOT read here — trusting it would let
+    clients spoof the header and bypass rate limits. In production uvicorn
+    runs with `--proxy-headers --forwarded-allow-ips` (see
+    deployment/docker-compose.yml), so request.client already holds the
+    real IP written by the reverse proxy.
     """
     return request.client.host if request.client else "unknown"
 

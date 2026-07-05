@@ -8,15 +8,15 @@ _settings = get_settings()
 
 broker: AsyncBroker
 if _settings.env == "test":
-    # await_inplace=True — kiq() task'ni darhol, o'sha yerda bajaradi;
-    # aks holda asyncio.create_task fon rejimida ishga tushib, test
-    # capture_logs() blokidan chiqqandan keyin bajarilishi mumkin (race).
+    # await_inplace=True makes kiq() run the task immediately in place;
+    # otherwise it is scheduled as a background asyncio task and may finish
+    # after a test's capture_logs() block has already exited (race).
     broker = InMemoryBroker(await_inplace=True)
 else:
-    # RedisStreamBroker — ack bilan: worker o'lsa ham task yo'qolmaydi
+    # RedisStreamBroker acknowledges messages: tasks survive worker crashes.
     broker = RedisStreamBroker(url=_settings.taskiq_broker_url).with_result_backend(
         RedisAsyncResultBackend(redis_url=_settings.taskiq_result_url, result_ex_time=3600)
     )
 
-# Dotted path — circular import'ning oldini oladi
+# The dotted path avoids a circular import with app.main.
 taskiq_fastapi.init(broker, "app.main:app")

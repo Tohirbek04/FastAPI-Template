@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 
 @pytest.fixture(scope="session", autouse=True)
 async def _create_test_database() -> None:
-    """app_test bazasini yaratadi (mavjud bo'lmasa)."""
+    """Create the app_test database if it does not exist."""
     admin_url = get_settings().database_url.rsplit("/", 1)[0] + "/postgres"
     admin_engine = create_async_engine(admin_url, isolation_level="AUTOCOMMIT")
     async with admin_engine.connect() as conn:
@@ -49,7 +49,7 @@ async def engine(_create_test_database: None) -> AsyncIterator[AsyncEngine]:
 
 @pytest.fixture
 async def db_session(engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
-    """Har test o'z savepoint'ida ishlaydi — oxirida hammasi rollback bo'ladi."""
+    """Run each test inside a savepoint that is rolled back afterwards."""
     async with engine.connect() as conn:
         await conn.begin()
         session = AsyncSession(

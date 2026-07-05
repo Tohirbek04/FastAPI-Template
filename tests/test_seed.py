@@ -14,7 +14,7 @@ async def test_seed_creates_superuser_once(
     get_settings.cache_clear()
     try:
         await seed()
-        await seed()  # idempotent — ikkinchi chaqiruv xato bermaydi
+        await seed()  # idempotent — the second call must be a no-op
 
         async with AsyncSession(engine) as session:
             from app.users.repository import UserRepository
@@ -22,7 +22,7 @@ async def test_seed_creates_superuser_once(
             user = await UserRepository(session).get_by_email("root@example.com")
             assert user is not None
             assert user.is_superuser
-            # tozalash — seed haqiqiy commit qiladi
+            # cleanup — seed() commits for real
             await session.execute(delete(User).where(User.email == "root@example.com"))
             await session.commit()
     finally:

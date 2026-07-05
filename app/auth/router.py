@@ -16,8 +16,8 @@ router = APIRouter()
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
 async def register(
-    request: Request,  # slowapi decorator talab qiladi
-    response: Response,  # slowapi headers_enabled uchun shart
+    request: Request,  # required by the slowapi decorator
+    response: Response,  # required by slowapi to inject rate-limit headers
     data: RegisterRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> UserRead:

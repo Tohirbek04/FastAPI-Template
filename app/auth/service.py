@@ -9,8 +9,8 @@ from app.users.models import User
 from app.users.repository import UserRepository
 from app.users.tasks import send_welcome_email
 
-# User topilmaganda ham verify chaqiriladi — javob vaqti bir xil bo'lib,
-# email mavjudligini timing orqali aniqlash imkonini yopadi.
+# Verified even when the user does not exist, so both login paths take
+# comparable time — prevents user enumeration via response timing.
 _DUMMY_HASH = hash_password("timing-equalization-dummy")
 
 
@@ -35,7 +35,7 @@ class AuthService:
             verify_password(password, _DUMMY_HASH)
             raise UnauthorizedError("Incorrect email or password")
         if not verify_password(password, user.hashed_password):
-            # Bir xil xabar — user enumeration hujumiga qarshi
+            # Same message as the unknown-email case — prevents user enumeration
             raise UnauthorizedError("Incorrect email or password")
         if not user.is_active:
             raise UnauthorizedError("Inactive user")

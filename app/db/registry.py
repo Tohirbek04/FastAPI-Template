@@ -1,7 +1,7 @@
-"""Alembic autogenerate va testlar uchun barcha modellarni import qiladi.
+"""Imports every domain's models so Alembic autogenerate and tests see them.
 
-Yangi domen modeli qo'shilganda BU YERGA import qo'shing —
-aks holda Alembic migratsiyada jadvalni ko'rmaydi.
+Add an import HERE whenever you create a new domain model —
+otherwise Alembic will not detect its table.
 """
 
 from app.users.models import User
