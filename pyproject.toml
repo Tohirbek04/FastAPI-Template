@@ -1,0 +1,71 @@
+[project]
+name = "fastapi-template"
+version = "0.1.0"
+description = "Production-ready FastAPI template"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.128.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "pydantic[email]>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "pyjwt>=2.10.0",
+    "pwdlib[argon2]>=0.2.1",
+    "taskiq>=0.11.7",
+    "taskiq-redis>=1.0.2",
+    "taskiq-fastapi>=0.3.2",
+    "redis>=5.2.0",
+    "structlog>=24.4.0",
+    "slowapi>=0.1.9",
+    "fastapi-pagination>=0.12.32",
+    "sentry-sdk[fastapi]>=2.20.0",
+    "prometheus-fastapi-instrumentator>=7.0.0",
+    "python-multipart>=0.0.20",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "httpx>=0.28.0",
+    "ruff>=0.9.0",
+    "mypy>=1.14.0",
+    "pre-commit>=4.0.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic'ning async shabloni `config`ni sozlagandan keyin import qiladi (E402).
+"migrations/env.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app", "scripts"]
+plugins = ["pydantic.mypy"]
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["slowapi.*", "taskiq_fastapi", "prometheus_fastapi_instrumentator.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+filterwarnings = [
+    # Python 3.14: uchinchi tomon kutubxonalari (slowapi/starlette) hali eski API'da
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
+]
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]

@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.idea/
+.vscode/
+htmlcov/
+.coverage
+dist/
+*.egg-info/
+letsencrypt/
+docs
+.superpowers
+.claude

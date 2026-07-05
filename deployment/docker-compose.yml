@@ -1,0 +1,130 @@
+services:
+  traefik:
+    image: traefik:v3.7
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - web
+
+  api:
+    image: ${DOCKER_IMAGE:-ghcr.io/OWNER/fastapi-template:latest}
+    restart: unless-stopped
+    env_file: .env
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=le"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    networks:
+      - web
+      - internal
+
+  worker:
+    image: ${DOCKER_IMAGE:-ghcr.io/OWNER/fastapi-template:latest}
+    restart: unless-stopped
+    env_file: .env
+    command: taskiq worker app.tasks.broker:broker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - internal
+
+  scheduler:
+    image: ${DOCKER_IMAGE:-ghcr.io/OWNER/fastapi-template:latest}
+    restart: unless-stopped
+    env_file: .env
+    command: taskiq scheduler app.tasks.scheduler:scheduler
+    depends_on:
+      redis:
+        condition: service_started
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internal
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    networks:
+      - internal
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafanadata:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=le"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    networks:
+      - web
+      - internal
+
+networks:
+  web:
+  internal:
+
+volumes:
+  pgdata:
+  redisdata:
+  promdata:
+  grafanadata:
+  letsencrypt:
